@@ -256,8 +256,8 @@ int main() {
     std::queue<unsigned int> bfs;
 
     unsigned int init_pose = 14;
-    bool near = nearestCell(init_pose, 15, 0, img);
-    bfs.push(init_pose);//扫地机初始点
+    bool near = nearestCell(init_pose, 15, 0, img);//校正,找到最近的0点,initpose挪到0点
+    bfs.push(init_pose);//扫地机初始点,像素值为0
 
     Mat bfsImg = img.clone();
     frontierImg = img.clone();
