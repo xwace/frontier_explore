@@ -141,7 +141,7 @@ bool isNewFrontierCell(const Mat& costmap, unsigned int idx, const std::vector<b
     return false;
 }
 
-
+static Mat frontierImg;
 Frontier buildNewFrontier(const Mat& img, unsigned int initial_cell, unsigned int reference,
                           std::vector<bool>& frontier_flag)
 {
@@ -157,12 +157,15 @@ Frontier buildNewFrontier(const Mat& img, unsigned int initial_cell, unsigned in
 
     double reference_x(0), reference_y(0);//当前扫地机位置
 
-    Mat out = img.clone();
-
     while (!bfs.empty())
     {
         unsigned int idx = bfs.front();
         bfs.pop();
+
+        frontierImg.at<uchar>(idx/img.cols,idx %img.cols) = 10;
+        namedWindow("frontierImg",2);
+        imshow("frontierImg",frontierImg*45);
+        waitKey();
 
         // try adding cells in 8-connected neighborhood to frontier
         for(auto nbr: nhood8(idx, img))
@@ -196,9 +199,9 @@ Frontier buildNewFrontier(const Mat& img, unsigned int initial_cell, unsigned in
                 // add to queue for breadth first search
                 bfs.push(nbr);
 
-                out.at<uchar>(wy,wx) = 10;
-                namedWindow("out",2);
-                imshow("out",out*45);
+                frontierImg.at<uchar>(wy,wx) = 10;
+                namedWindow("frontierImg",2);
+                imshow("frontierImg",frontierImg*45);
                 waitKey();
             }
         }
@@ -237,8 +240,10 @@ int main() {
     img.col(7) = 2;
     shuffle(img.begin<uchar>(),img.end<uchar>(), std::mt19937(std::random_device()()));
     img.col(5) = 2;
+    img.col(6) = 2;
+    img.col(7) = 2;
     img.at<uchar>(5,5) = 0;
-    img.at<uchar>(5,7) = 0;
+    img.at<uchar>(5,6) = 0;
     img.at<uchar>(5,7) = 0;
     cout<<img<<endl;
 
@@ -254,6 +259,9 @@ int main() {
     bool near = nearestCell(init_pose, 15, 0, img);
     bfs.push(init_pose);//扫地机初始点
 
+    Mat bfsImg = img.clone();
+    frontierImg = img.clone();
+
     while (!bfs.empty())
     {
         unsigned int idx = bfs.front();
@@ -267,6 +275,11 @@ int main() {
             {
                 visited_flag[nbr] = true;
                 bfs.push(nbr);
+
+                bfsImg.at<uchar>(nbr/img.cols,nbr%img.cols) = 10;
+                namedWindow("bfs",2);
+                imshow("bfs",bfsImg*45);
+                waitKey();
             }
 
             else if (isNewFrontierCell(img, nbr, frontier_flag))
